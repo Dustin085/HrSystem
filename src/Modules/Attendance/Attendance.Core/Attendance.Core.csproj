@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Attendance.Contracts\Attendance.Contracts.csproj" />
+    <!-- 只能參照其他模組的 Contracts，絕對不能參照 Organization.Core -->
+    <ProjectReference Include="..\..\Organization\Organization.Contracts\Organization.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

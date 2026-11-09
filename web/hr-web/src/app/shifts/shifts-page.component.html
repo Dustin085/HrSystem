@@ -1,0 +1,96 @@
+<h1>排班</h1>
+
+<section class="card">
+  <h2>新增排班</h2>
+
+  <p *ngIf="!employees.length" class="muted">
+    還沒有員工，請先到 <a routerLink="/employees">員工</a> 頁面新增。
+  </p>
+
+  <form [formGroup]="createForm" (ngSubmit)="submit()" class="form-row">
+    <label>
+      員工
+      <select formControlName="employeeId" [class.invalid]="isInvalid('employeeId')">
+        <option value="" disabled>請選擇</option>
+        <option *ngFor="let employee of employees" [value]="employee.id">
+          {{ employee.employeeNumber }} {{ employee.name }}
+        </option>
+      </select>
+      <small *ngIf="isInvalid('employeeId')" class="field-error">請選擇員工</small>
+    </label>
+
+    <label>
+      日期
+      <input type="date" formControlName="date" [class.invalid]="isInvalid('date')">
+    </label>
+
+    <label>
+      上班
+      <input type="time" formControlName="startTime" [class.invalid]="isInvalid('startTime')">
+    </label>
+
+    <label>
+      下班
+      <input type="time" formControlName="endTime" [class.invalid]="isInvalid('endTime')">
+    </label>
+
+    <button type="submit" [disabled]="saving">{{ saving ? '儲存中…' : '排班' }}</button>
+  </form>
+
+  <ul *ngIf="createErrors.length" class="errors">
+    <li *ngFor="let error of createErrors">{{ error }}</li>
+  </ul>
+</section>
+
+<section class="card">
+  <h2>查詢排班</h2>
+
+  <form [formGroup]="searchForm" (ngSubmit)="search()" class="form-row">
+    <label>
+      員工
+      <select formControlName="employeeId">
+        <option value="">全部</option>
+        <option *ngFor="let employee of employees" [value]="employee.id">
+          {{ employee.employeeNumber }} {{ employee.name }}
+        </option>
+      </select>
+    </label>
+
+    <label>
+      從
+      <input type="date" formControlName="from">
+    </label>
+
+    <label>
+      到
+      <input type="date" formControlName="to">
+    </label>
+
+    <button type="submit">查詢</button>
+  </form>
+
+  <ul *ngIf="searchErrors.length" class="errors">
+    <li *ngFor="let error of searchErrors">{{ error }}</li>
+  </ul>
+
+  <table *ngIf="assignments.length; else empty">
+    <thead>
+      <tr>
+        <th>日期</th>
+        <th>員工</th>
+        <th>時段</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let assignment of assignments">
+        <td>{{ assignment.date }}</td>
+        <td>{{ employeeLabel(assignment.employeeId) }}</td>
+        <td>{{ shortTime(assignment.startTime) }} – {{ shortTime(assignment.endTime) }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <ng-template #empty>
+    <p class="muted">沒有符合條件的排班。</p>
+  </ng-template>
+</section>

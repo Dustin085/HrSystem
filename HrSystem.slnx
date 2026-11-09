@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/Attendance/">
+    <Project Path="src/Modules/Attendance/Attendance.Contracts/Attendance.Contracts.csproj" Id="cd00e9d1-c160-4952-8c49-97c5e951f5b6" />
+    <Project Path="src/Modules/Attendance/Attendance.Core/Attendance.Core.csproj" Id="086cfe8c-3908-47a4-a391-361dafbcd219" />
+  </Folder>
+  <Folder Name="/Organization/">
+    <Project Path="src/Modules/Organization/Organization.Contracts/Organization.Contracts.csproj" Id="8e75e391-badb-452b-a02f-f2fe0393f6fb" />
+    <Project Path="src/Modules/Organization/Organization.Core/Organization.Core.csproj" Id="ac76d239-d8c8-4c77-b4cb-f65e1f9e3c37" />
+  </Folder>
+  <Project Path="src/HrSystem.Host/HrSystem.Host.csproj" Id="83931394-7754-4855-a412-13e44f80a33d" />
+</Solution>

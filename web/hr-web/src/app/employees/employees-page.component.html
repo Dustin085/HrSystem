@@ -1,0 +1,50 @@
+<h1>員工</h1>
+
+<section class="card">
+  <h2>新增員工</h2>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="form-row">
+    <label>
+      姓名
+      <input type="text" formControlName="name" maxlength="50" [class.invalid]="isInvalid('name')">
+      <small *ngIf="isInvalid('name')" class="field-error">請輸入姓名（最多 50 字）</small>
+    </label>
+
+    <label>
+      到職日
+      <input type="date" formControlName="hireDate" [class.invalid]="isInvalid('hireDate')">
+      <small *ngIf="isInvalid('hireDate')" class="field-error">請選擇到職日</small>
+    </label>
+
+    <button type="submit" [disabled]="saving">{{ saving ? '儲存中…' : '新增' }}</button>
+  </form>
+
+  <ul *ngIf="errors.length" class="errors">
+    <li *ngFor="let error of errors">{{ error }}</li>
+  </ul>
+</section>
+
+<section class="card">
+  <h2>員工列表</h2>
+
+  <table *ngIf="employees.length; else empty">
+    <thead>
+      <tr>
+        <th>員工編號</th>
+        <th>姓名</th>
+        <th>到職日</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let employee of employees">
+        <td>{{ employee.employeeNumber }}</td>
+        <td>{{ employee.name }}</td>
+        <td>{{ employee.hireDate }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <ng-template #empty>
+    <p class="muted">目前還沒有員工。</p>
+  </ng-template>
+</section>
