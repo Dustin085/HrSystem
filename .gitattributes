@@ -1,0 +1,20 @@
+# 換行字元規則
+# repo 裡一律存 LF；checkout 到 Windows 時轉成 CRLF，commit 時再轉回 LF。
+# 這份規則跟著 repo 走，不依賴每台電腦各自的 core.autocrlf 設定。
+* text=auto
+
+# 一定要是 LF 的檔案（在 Git Bash / Linux 上執行，CRLF 會讓 shell 腳本壞掉）
+*.sh text eol=lf
+
+# Windows 專用腳本維持 CRLF
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# 二進位檔，不做任何換行轉換，也不做文字 diff
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
