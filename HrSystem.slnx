@@ -7,5 +7,8 @@
     <Project Path="src/Modules/Organization/Organization.Contracts/Organization.Contracts.csproj" Id="8e75e391-badb-452b-a02f-f2fe0393f6fb" />
     <Project Path="src/Modules/Organization/Organization.Core/Organization.Core.csproj" Id="ac76d239-d8c8-4c77-b4cb-f65e1f9e3c37" />
   </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Build.props" />
+  </Folder>
   <Project Path="src/HrSystem.Host/HrSystem.Host.csproj" Id="83931394-7754-4855-a412-13e44f80a33d" />
 </Solution>
