@@ -17,6 +17,11 @@ namespace Attendance.Core
             // Service 因此必須是 public，但 Attendance.Core 只被 Host 參照，其他模組仍然用不到它。
             services.AddScoped<ShiftAssignmentService>();
 
+            services.AddOptions<AttendanceOptions>()
+                .BindConfiguration(AttendanceOptions.SectionName)
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+
             return services;
         }
     }

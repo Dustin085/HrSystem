@@ -1,6 +1,7 @@
 using Attendance.Contracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Attendance.Core
 {
@@ -9,10 +10,13 @@ namespace Attendance.Core
     public sealed class ShiftAssignmentsController : ControllerBase
     {
         private readonly ShiftAssignmentService _shiftAssignmentService;
+        private readonly IOptions<AttendanceOptions> _attendanceOptions;
 
-        public ShiftAssignmentsController(ShiftAssignmentService shiftAssignmentService)
+        public ShiftAssignmentsController(ShiftAssignmentService shiftAssignmentService,
+            IOptions<AttendanceOptions> attendanceOptions)
         {
             _shiftAssignmentService = shiftAssignmentService;
+            _attendanceOptions = attendanceOptions;
         }
 
         [HttpPost]
@@ -32,6 +36,10 @@ namespace Attendance.Core
 
                 CreateShiftAssignmentError.EmployeeNotFound =>
                     FieldError(nameof(request.EmployeeId), "找不到此員工。"),
+
+                CreateShiftAssignmentError.ExceedMaxShiftDuration =>
+                    FieldError(nameof(request.EndTime),
+                    "超過最長單次排班時間: " + _attendanceOptions.Value.MaxShiftDuration.TotalHours + " 小時"),
 
                 CreateShiftAssignmentError.Overlapping =>
                     Problem(

@@ -7,6 +7,7 @@ namespace Attendance.Core
         InvalidTimeRange,
         EmployeeNotFound,
         Overlapping,
+        ExceedMaxShiftDuration,
     }
 
     /// <summary>
