@@ -3,7 +3,7 @@ using Organization.Contracts;
 
 namespace Attendance.Core
 {
-    internal sealed class ShiftAssignmentService : IShiftAssignmentService
+    public sealed class ShiftAssignmentService
     {
         private readonly InMemoryShiftAssignmentRepository _repository;
         // 跨模組只透過 Organization.Contracts 的介面查詢員工

@@ -8,9 +8,9 @@ namespace Organization.Core
     [Route("api/employees")]
     public sealed class EmployeesController : ControllerBase
     {
-        private readonly IEmployeeService _employeeService;
+        private readonly EmployeeService _employeeService;
 
-        public EmployeesController(IEmployeeService employeeService)
+        public EmployeesController(EmployeeService employeeService)
         {
             _employeeService = employeeService;
         }

@@ -8,9 +8,9 @@ namespace Attendance.Core
     [Route("api/shift-assignments")]
     public sealed class ShiftAssignmentsController : ControllerBase
     {
-        private readonly IShiftAssignmentService _shiftAssignmentService;
+        private readonly ShiftAssignmentService _shiftAssignmentService;
 
-        public ShiftAssignmentsController(IShiftAssignmentService shiftAssignmentService)
+        public ShiftAssignmentsController(ShiftAssignmentService shiftAssignmentService)
         {
             _shiftAssignmentService = shiftAssignmentService;
         }
