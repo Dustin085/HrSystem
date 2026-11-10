@@ -47,7 +47,7 @@ namespace Attendance.Core
                     .Where(a => from is null || a.Date >= from)
                     .Where(a => to is null || a.Date <= to)
                     .OrderBy(a => a.Date)
-                    .ThenBy(a => a.StartTime)
+                    .ThenBy(a => a.TimeRange.Start)
                     .ToList();
             }
         }

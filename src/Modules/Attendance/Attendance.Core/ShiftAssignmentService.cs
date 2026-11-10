@@ -29,12 +29,12 @@ namespace Attendance.Core
             var startTime = request.StartTime!.Value;
             var endTime = request.EndTime!.Value;
 
-            if (!ShiftAssignment.IsValidTimeRange(startTime, endTime))
+            if (!TimeRange.TryCreate(startTime, endTime, out TimeRange timeRange))
             {
                 return CreateShiftAssignmentResult.Failure(CreateShiftAssignmentError.InvalidTimeRange);
             }
 
-            if (!IsWithinMaxShiftDuration(startTime, endTime))
+            if (!IsWithinMaxShiftDuration(timeRange))
             {
                 return CreateShiftAssignmentResult.Failure(CreateShiftAssignmentError.ExceedMaxShiftDuration);
             }
@@ -44,7 +44,7 @@ namespace Attendance.Core
                 return CreateShiftAssignmentResult.Failure(CreateShiftAssignmentError.EmployeeNotFound);
             }
 
-            var assignment = new ShiftAssignment(employeeId, date, startTime, endTime);
+            var assignment = new ShiftAssignment(employeeId, date, timeRange);
 
             if (!_repository.TryAddWithoutOverlap(assignment))
             {
@@ -68,9 +68,9 @@ namespace Attendance.Core
 
             return Task.FromResult(result);
         }
-        private bool IsWithinMaxShiftDuration(TimeOnly startTime, TimeOnly endTime)
+        private bool IsWithinMaxShiftDuration(TimeRange timeRange)
         {
-            return _attendanceOptions.Value.MaxShiftDuration >= endTime - startTime;
+            return _attendanceOptions.Value.MaxShiftDuration >= timeRange.Duration;
         }
     }
 }

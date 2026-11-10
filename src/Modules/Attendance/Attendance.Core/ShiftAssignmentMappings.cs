@@ -10,8 +10,8 @@ namespace Attendance.Core
                 assignment.Id,
                 assignment.EmployeeId,
                 assignment.Date,
-                assignment.StartTime,
-                assignment.EndTime);
+                assignment.TimeRange.Start,
+                assignment.TimeRange.End);
         }
     }
 }

@@ -9,30 +9,23 @@ namespace Attendance.Core
         public Guid Id { get; private set; } = Guid.CreateVersion7();
         public Guid EmployeeId { get; private set; }
         public DateOnly Date { get; private set; }
-        public TimeOnly StartTime { get; private set; }
-        public TimeOnly EndTime { get; private set; }
+        public TimeRange TimeRange { get; private set; }
 
-        public ShiftAssignment(Guid employeeId, DateOnly date, TimeOnly startTime, TimeOnly endTime)
+        public ShiftAssignment(Guid employeeId, DateOnly date, TimeRange timeRange)
         {
             if (employeeId == Guid.Empty)
             {
                 throw new ArgumentException("必須指定員工。", nameof(employeeId));
             }
 
-            if (!IsValidTimeRange(startTime, endTime))
+            if (timeRange == default)
             {
-                throw new ArgumentException("下班時間必須晚於上班時間。", nameof(endTime));
+                throw new ArgumentException("建立排班時，必須使用有效的時間區間", nameof(timeRange));
             }
 
             EmployeeId = employeeId;
             Date = date;
-            StartTime = startTime;
-            EndTime = endTime;
-        }
-
-        public static bool IsValidTimeRange(TimeOnly startTime, TimeOnly endTime)
-        {
-            return endTime > startTime;
+            TimeRange = timeRange;
         }
 
         /// <summary>
@@ -43,8 +36,7 @@ namespace Attendance.Core
         {
             return EmployeeId == other.EmployeeId
                 && Date == other.Date
-                && StartTime < other.EndTime
-                && other.StartTime < EndTime;
+                && TimeRange.Overlaps(other.TimeRange);
         }
     }
 }
