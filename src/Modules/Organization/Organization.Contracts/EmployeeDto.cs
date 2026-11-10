@@ -4,5 +4,6 @@
         Guid Id,
         string EmployeeNumber,
         string Name,
-        DateOnly HireDate);
+        DateOnly HireDate,
+        DateOnly? TerminationDate);
 }

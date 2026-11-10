@@ -10,7 +10,8 @@ namespace Organization.Core
                 employee.Id,
                 employee.EmployeeNumber,
                 employee.Name,
-                employee.HireDate);
+                employee.HireDate,
+                employee.TerminationDate);
         }
     }
 }

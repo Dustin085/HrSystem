@@ -33,6 +33,7 @@
         <th>員工編號</th>
         <th>姓名</th>
         <th>到職日</th>
+        <th>離職日</th>
       </tr>
     </thead>
     <tbody>
@@ -40,6 +41,8 @@
         <td>{{ employee.employeeNumber }}</td>
         <td>{{ employee.name }}</td>
         <td>{{ employee.hireDate }}</td>
+        <!-- terminationDate 是 string | null | undefined，沒有值代表在職 -->
+        <td>{{ employee.terminationDate ?? '在職' }}</td>
       </tr>
     </tbody>
   </table>

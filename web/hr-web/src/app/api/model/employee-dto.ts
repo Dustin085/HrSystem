@@ -14,5 +14,6 @@ export interface EmployeeDto {
     employeeNumber: string;
     name: string;
     hireDate: string;
+    terminationDate?: string | null;
 }
 
