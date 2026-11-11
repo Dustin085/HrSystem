@@ -79,6 +79,7 @@
         <th>日期</th>
         <th>員工</th>
         <th>時段</th>
+        <th>時數</th>
       </tr>
     </thead>
     <tbody>
@@ -86,6 +87,7 @@
         <td>{{ assignment.date }}</td>
         <td>{{ employeeLabel(assignment.employeeId) }}</td>
         <td>{{ shortTime(assignment.startTime) }} – {{ shortTime(assignment.endTime) }}</td>
+        <td>{{ getDisplayDuration(assignment) }}</td>
       </tr>
     </tbody>
   </table>

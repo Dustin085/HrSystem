@@ -8,10 +8,13 @@ namespace Organization.Core
     internal sealed class EmployeeDirectory : IEmployeeDirectory
     {
         private readonly InMemoryEmployeeRepository _repository;
+        private readonly TimeProvider _timeProvider;
 
-        public EmployeeDirectory(InMemoryEmployeeRepository repository)
+        public EmployeeDirectory(InMemoryEmployeeRepository repository,
+            TimeProvider timeProvider)
         {
             _repository = repository;
+            _timeProvider = timeProvider;
         }
 
         public Task<bool> ExistsByIdAsync(Guid id)
@@ -21,7 +24,17 @@ namespace Organization.Core
 
         public Task<EmployeeDto?> GetByIdAsync(Guid id)
         {
-            return Task.FromResult(_repository.Find(id)?.ToDto());
+            return Task.FromResult(_repository.Find(id)?.ToDto(_timeProvider.GetToday()));
+        }
+
+        public Task<EmploymentStatus?> GetEmploymentStatusOnAsync(Guid id, DateOnly date)
+        {
+            var employee = _repository.Find(id);
+            if (employee is null)
+            {
+                return Task.FromResult<EmploymentStatus?>(null);
+            }
+            return Task.FromResult<EmploymentStatus?>(employee.GetEmploymentStatusOn(date));
         }
     }
 }

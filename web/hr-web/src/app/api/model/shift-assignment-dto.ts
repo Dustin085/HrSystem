@@ -15,5 +15,6 @@ export interface ShiftAssignmentDto {
     date: string;
     startTime: string;
     endTime: string;
+    duration: string;
 }
 

@@ -2,13 +2,18 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
 
-import { CreateEmployeeRequest, EmployeeDto, EmployeesService } from '../api';
+import {
+  CreateEmployeeRequest,
+  EmployeeDto,
+  EmployeesService,
+  EmploymentStatus,
+} from '../api';
 import { toErrorMessages } from '../shared/api-errors';
 import { todayIso } from '../shared/dates';
 
 @Component({
   selector: 'app-employees-page',
-  templateUrl: './employees-page.component.html'
+  templateUrl: './employees-page.component.html',
 })
 export class EmployeesPageComponent implements OnInit {
   employees: EmployeeDto[] = [];
@@ -17,13 +22,13 @@ export class EmployeesPageComponent implements OnInit {
 
   form = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(50)]],
-    hireDate: [todayIso(), Validators.required]
+    hireDate: [todayIso(), Validators.required],
   });
 
   constructor(
     private fb: FormBuilder,
-    private employeesService: EmployeesService
-  ) { }
+    private employeesService: EmployeesService,
+  ) {}
 
   ngOnInit(): void {
     this.loadEmployees();
@@ -31,8 +36,8 @@ export class EmployeesPageComponent implements OnInit {
 
   loadEmployees(): void {
     this.employeesService.listEmployees().subscribe({
-      next: employees => this.employees = employees,
-      error: error => this.errors = toErrorMessages(error)
+      next: (employees) => (this.employees = employees),
+      error: (error) => (this.errors = toErrorMessages(error)),
     });
   }
 
@@ -50,15 +55,16 @@ export class EmployeesPageComponent implements OnInit {
     this.saving = true;
     this.errors = [];
 
-    this.employeesService.createEmployee(request)
-      .pipe(finalize(() => this.saving = false))
+    this.employeesService
+      .createEmployee(request)
+      .pipe(finalize(() => (this.saving = false)))
       .subscribe({
         next: () => {
           // reset 會同時清掉 touched / dirty 狀態，表單回到剛打開時的樣子（不會顯示錯誤）
           this.form.reset({ name: '', hireDate: todayIso() });
           this.loadEmployees();
         },
-        error: error => this.errors = toErrorMessages(error)
+        error: (error) => (this.errors = toErrorMessages(error)),
       });
   }
 
@@ -71,4 +77,19 @@ export class EmployeesPageComponent implements OnInit {
     const control = this.form.get(controlName);
     return !!control && control.invalid && control.touched;
   }
+
+  statusToDisplayName(status: EmploymentStatus): string {
+    return STATUS_DISPLAY_NAMES[status];
+  }
 }
+
+/**
+ * 任職狀態的中文名稱。
+ * 用 Record<EmploymentStatus, string> 而不是 switch + default：
+ * 後端新增狀態、重新 gen:api 之後，這裡少寫任何一個狀態都會編譯失敗，不會默默顯示「未知狀態」。
+ */
+const STATUS_DISPLAY_NAMES: Record<EmploymentStatus, string> = {
+  [EmploymentStatus.NotYetHired]: '尚未到職',
+  [EmploymentStatus.Active]: '在職',
+  [EmploymentStatus.Terminated]: '已離職',
+};

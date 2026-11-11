@@ -11,6 +11,8 @@ namespace Attendance.Core
         public DateOnly Date { get; private set; }
         public TimeRange TimeRange { get; private set; }
 
+        public TimeSpan Duration => TimeRange.Duration;
+
         public ShiftAssignment(Guid employeeId, DateOnly date, TimeRange timeRange)
         {
             if (employeeId == Guid.Empty)

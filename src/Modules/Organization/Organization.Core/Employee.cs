@@ -8,7 +8,7 @@ namespace Organization.Core
         public string EmployeeNumber { get; private set; }
         public string Name { get; private set; }
         public DateOnly HireDate { get; private set; }
-        public DateOnly? TerminationDate { get; private set; } // 離職日，null 代表在職
+        public DateOnly? TerminationDate { get; private set; } // 離職日，null 代表在職。離職日當天是最後工作日
 
         public Employee(string employeeNumber, string name, DateOnly hireDate)
         {
@@ -43,6 +43,25 @@ namespace Organization.Core
 
             TerminationDate = terminationDate;
         }
+
+        /// <summary>
+        /// 指定日期的任職狀態。日期由呼叫端傳入，entity 不讀時鐘，結果只取決於資料和參數。
+        /// </summary>
+        public EmploymentStatus GetEmploymentStatusOn(DateOnly date)
+        {
+            // switch 由上往下比對，第一個符合的分支勝出。
+            // HireDate 不是常數，不能寫成關係模式（< HireDate），所以要用 when。
+            return (TerminationDate, date) switch
+            {
+                (_, var d) when d < HireDate => EmploymentStatus.NotYetHired,
+                (null, _) => EmploymentStatus.Active,                     // 常數模式：還沒離職
+                ({ } t, var d) when d <= t => EmploymentStatus.Active,     // { } t：不是 null，並取出 DateOnly；離職日當天仍在職
+                _ => EmploymentStatus.Terminated,                         // 其餘情況：已經過了離職日
+            };
+        }
+
+        /// <summary>在職規則只寫在 GetEmploymentStatusOn 一個地方，這裡直接沿用。</summary>
+        public bool IsEmployedOn(DateOnly date) => GetEmploymentStatusOn(date) == EmploymentStatus.Active;
 
         /// <summary>
         /// 建構子和 Rename 共用的姓名規則。

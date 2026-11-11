@@ -1,6 +1,7 @@
 export * from './create-employee-request';
 export * from './create-shift-assignment-request';
 export * from './employee-dto';
+export * from './employment-status';
 export * from './problem-details';
 export * from './rename-employee-request';
 export * from './shift-assignment-dto';

@@ -5,5 +5,6 @@ namespace Attendance.Contracts
         Guid EmployeeId,
         DateOnly Date,
         TimeOnly StartTime,
-        TimeOnly EndTime);
+        TimeOnly EndTime,
+        TimeSpan Duration);
 }

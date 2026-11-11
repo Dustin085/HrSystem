@@ -14,6 +14,7 @@ index.ts
 model/create-employee-request.ts
 model/create-shift-assignment-request.ts
 model/employee-dto.ts
+model/employment-status.ts
 model/models.ts
 model/problem-details.ts
 model/rename-employee-request.ts

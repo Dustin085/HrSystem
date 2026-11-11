@@ -37,6 +37,9 @@ namespace Attendance.Core
                 CreateShiftAssignmentError.EmployeeNotFound =>
                     FieldError(nameof(request.EmployeeId), "找不到此員工。"),
 
+                CreateShiftAssignmentError.EmployeeNotEmployedOnDate =>
+                    FieldError(nameof(request.Date), "排班日當天此員工不在職（尚未到職或已離職）。"),
+
                 CreateShiftAssignmentError.ExceedMaxShiftDuration =>
                     FieldError(nameof(request.EndTime),
                     "超過最長單次排班時間: " + _attendanceOptions.Value.MaxShiftDuration.TotalHours + " 小時"),

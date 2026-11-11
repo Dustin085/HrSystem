@@ -7,13 +7,18 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { EmploymentStatus } from './employment-status';
 
 
 export interface EmployeeDto { 
     id: string;
     employeeNumber: string;
     name: string;
+    status: EmploymentStatus;
     hireDate: string;
     terminationDate?: string | null;
 }
+export namespace EmployeeDto {
+}
+
 

@@ -10,10 +10,13 @@ namespace Organization.Core
     public sealed class EmployeeService
     {
         private readonly InMemoryEmployeeRepository _repository;
+        private readonly TimeProvider _timeProvider;
 
-        public EmployeeService(InMemoryEmployeeRepository repository)
+        public EmployeeService(InMemoryEmployeeRepository repository,
+            TimeProvider timeProvider)
         {
             _repository = repository;
+            _timeProvider = timeProvider;
         }
 
         public Task<EmployeeDto> CreateAsync(CreateEmployeeRequest request)
@@ -26,17 +29,19 @@ namespace Organization.Core
 
             _repository.Add(employee);
 
-            return Task.FromResult(employee.ToDto());
+            return Task.FromResult(employee.ToDto(_timeProvider.GetToday()));
         }
 
         public Task<EmployeeDto?> GetByIdAsync(Guid id)
         {
-            return Task.FromResult(_repository.Find(id)?.ToDto());
+            return Task.FromResult(_repository.Find(id)?.ToDto(_timeProvider.GetToday()));
         }
 
         public Task<IReadOnlyList<EmployeeDto>> ListAsync()
         {
-            IReadOnlyList<EmployeeDto> result = _repository.List().Select(e => e.ToDto()).ToList();
+            // 「今天」只取一次：寫在 lambda 裡的話，每個員工都會重新讀一次時鐘
+            var today = _timeProvider.GetToday();
+            IReadOnlyList<EmployeeDto> result = _repository.List().Select(e => e.ToDto(today)).ToList();
             return Task.FromResult(result);
         }
 
@@ -50,7 +55,7 @@ namespace Organization.Core
             }
 
             employee.Rename(name);
-            return Task.FromResult<EmployeeDto?>(employee.ToDto());
+            return Task.FromResult<EmployeeDto?>(employee.ToDto(_timeProvider.GetToday()));
         }
 
         /// <summary>
@@ -78,7 +83,7 @@ namespace Organization.Core
             }
 
             employee.Terminate(terminationDate);
-            return Task.FromResult(TerminateEmployeeResult.Success(employee.ToDto()));
+            return Task.FromResult(TerminateEmployeeResult.Success(employee.ToDto(_timeProvider.GetToday())));
         }
     }
 }

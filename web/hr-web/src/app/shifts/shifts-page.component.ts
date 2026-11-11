@@ -7,14 +7,14 @@ import {
   EmployeeDto,
   EmployeesService,
   ShiftAssignmentDto,
-  ShiftAssignmentsService
+  ShiftAssignmentsService,
 } from '../api';
 import { toErrorMessages } from '../shared/api-errors';
 import { shortTime, todayIso } from '../shared/dates';
 
 @Component({
   selector: 'app-shifts-page',
-  templateUrl: './shifts-page.component.html'
+  templateUrl: './shifts-page.component.html',
 })
 export class ShiftsPageComponent implements OnInit {
   employees: EmployeeDto[] = [];
@@ -29,25 +29,25 @@ export class ShiftsPageComponent implements OnInit {
     employeeId: ['', Validators.required],
     date: [todayIso(), Validators.required],
     startTime: ['09:00', Validators.required],
-    endTime: ['18:00', Validators.required]
+    endTime: ['18:00', Validators.required],
   });
 
   searchForm = this.fb.group({
     employeeId: [''],
     from: [todayIso()],
-    to: ['']
+    to: [''],
   });
 
   constructor(
     private fb: FormBuilder,
     private employeesService: EmployeesService,
-    private shiftAssignmentsService: ShiftAssignmentsService
-  ) { }
+    private shiftAssignmentsService: ShiftAssignmentsService,
+  ) {}
 
   ngOnInit(): void {
     this.employeesService.listEmployees().subscribe({
-      next: employees => this.employees = employees,
-      error: error => this.createErrors = toErrorMessages(error)
+      next: (employees) => (this.employees = employees),
+      error: (error) => (this.createErrors = toErrorMessages(error)),
     });
 
     this.search();
@@ -59,10 +59,14 @@ export class ShiftsPageComponent implements OnInit {
 
     // 空字串代表「不篩選」，要轉成 undefined，產生的 service 才不會送出這個 query 參數
     this.shiftAssignmentsService
-      .listShiftAssignments(employeeId || undefined, from || undefined, to || undefined)
+      .listShiftAssignments(
+        employeeId || undefined,
+        from || undefined,
+        to || undefined,
+      )
       .subscribe({
-        next: assignments => this.assignments = assignments,
-        error: error => this.searchErrors = toErrorMessages(error)
+        next: (assignments) => (this.assignments = assignments),
+        error: (error) => (this.searchErrors = toErrorMessages(error)),
       });
   }
 
@@ -78,23 +82,34 @@ export class ShiftsPageComponent implements OnInit {
     this.saving = true;
     this.createErrors = [];
 
-    this.shiftAssignmentsService.createShiftAssignment(request)
-      .pipe(finalize(() => this.saving = false))
+    this.shiftAssignmentsService
+      .createShiftAssignment(request)
+      .pipe(finalize(() => (this.saving = false)))
       .subscribe({
         next: () => this.search(),
         // 時段重疊（409）、下班早於上班、員工不存在（400）都會顯示在這裡
-        error: error => this.createErrors = toErrorMessages(error)
+        error: (error) => (this.createErrors = toErrorMessages(error)),
       });
   }
 
   employeeLabel(employeeId: string): string {
-    const employee = this.employees.find(e => e.id === employeeId);
-    return employee ? `${employee.employeeNumber} ${employee.name}` : employeeId;
+    const employee = this.employees.find((e) => e.id === employeeId);
+    return employee
+      ? `${employee.employeeNumber} ${employee.name}`
+      : employeeId;
   }
 
   /** 欄位不合法「而且」使用者碰過 (touched) 才顯示錯誤，避免一打開頁面就滿版紅字。 */
   isInvalid(controlName: string): boolean {
     const control = this.createForm.get(controlName);
     return !!control && control.invalid && control.touched;
+  }
+
+  getDisplayDuration(shiftAssignment: ShiftAssignmentDto): string {
+    const [hour, min, sec] = shiftAssignment.duration
+      .split(':')
+      .map((str) => Number(str));
+
+    return (hour + min / 60 + sec / 3600).toFixed(2) + ' 小時';
   }
 }

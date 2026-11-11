@@ -39,9 +39,13 @@ namespace Attendance.Core
                 return CreateShiftAssignmentResult.Failure(CreateShiftAssignmentError.ExceedMaxShiftDuration);
             }
 
-            if (!await _employeeDirectory.ExistsByIdAsync(employeeId))
+            var status = await _employeeDirectory.GetEmploymentStatusOnAsync(employeeId, date);
+            switch (status)
             {
-                return CreateShiftAssignmentResult.Failure(CreateShiftAssignmentError.EmployeeNotFound);
+                case null:
+                    return CreateShiftAssignmentResult.Failure(CreateShiftAssignmentError.EmployeeNotFound);
+                case not EmploymentStatus.Active:
+                    return CreateShiftAssignmentResult.Failure(CreateShiftAssignmentError.EmployeeNotEmployedOnDate);
             }
 
             var assignment = new ShiftAssignment(employeeId, date, timeRange);
