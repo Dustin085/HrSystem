@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Organization.Contracts;
 
-namespace Organization.Contracts
+namespace Organization.Core
 {
     public record CreateEmployeeRequest(
         [Required, StringLength(EmployeeConstraints.NameMaxLength)] string Name,

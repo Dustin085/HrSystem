@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Organization.Contracts
+namespace Organization.Core
 {
     public record TerminateEmployeeRequest(
         [Required] DateOnly? TerminationDate);
