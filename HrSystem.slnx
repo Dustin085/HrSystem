@@ -10,5 +10,8 @@
   <Folder Name="/Solution Items/">
     <File Path="Directory.Build.props" />
   </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="tests/Modules/Attendance/Attendance.Core.Tests/Attendance.Core.Tests.csproj" />
+  </Folder>
   <Project Path="src/HrSystem.Host/HrSystem.Host.csproj" Id="83931394-7754-4855-a412-13e44f80a33d" />
 </Solution>

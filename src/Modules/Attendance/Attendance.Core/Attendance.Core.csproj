@@ -10,4 +10,9 @@
     <ProjectReference Include="..\..\Organization\Organization.Contracts\Organization.Contracts.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- 讓測試專案可以存取 internal 的 entity 和 service -->
+    <InternalsVisibleTo Include="Attendance.Core.Tests" />
+  </ItemGroup>
+
 </Project>
