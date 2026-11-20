@@ -1,6 +1,6 @@
-﻿namespace Attendance.Core
+﻿namespace Attendance.Contracts
 {
-    internal enum LeaveApplicationType
+    public enum LeaveApplicationType
     {
         PersonalLeave = 1, // 事假
         SickLeave = 2, // 病假

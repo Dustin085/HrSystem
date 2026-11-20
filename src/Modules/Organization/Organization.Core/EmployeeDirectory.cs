@@ -36,5 +36,19 @@ namespace Organization.Core
             }
             return Task.FromResult<EmploymentStatus?>(employee.GetEmploymentStatusOn(date));
         }
+
+        public Task<bool?> IsEmployedThroughoutAsync(Guid id, DateOnly start, DateOnly end)
+        {
+            if (end < start)
+            {
+                throw new ArgumentException("結束日不能早於開始日。", nameof(end));
+            }
+            var employee = _repository.Find(id);
+            if (employee is null)
+            {
+                return Task.FromResult<bool?>(null);
+            }
+            return Task.FromResult<bool?>(employee.IsEmployedThroughout(start, end));
+        }
     }
 }

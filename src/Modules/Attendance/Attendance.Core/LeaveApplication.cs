@@ -1,10 +1,9 @@
-﻿namespace Attendance.Core
+﻿using Attendance.Contracts;
+
+namespace Attendance.Core
 {
     internal sealed class LeaveApplication
     {
-        private const int MaxReasonLength = 200;
-        private const int MaxPersonalLeaveDays = 14;
-
         public Guid Id { get; private set; } = Guid.CreateVersion7();
         public Guid EmployeeId { get; private set; }
         public LeaveApplicationType Type { get; private set; }
@@ -17,14 +16,14 @@
 
         public int Duration => DateRange.Duration;
 
-        private bool CanEdit => Status is LeaveApplicationStatus.Draft
+        public bool CanEdit => Status is LeaveApplicationStatus.Draft
             or LeaveApplicationStatus.Rejected;
-        private bool CanSubmit => Status is LeaveApplicationStatus.Draft
+        public bool CanSubmit => Status is LeaveApplicationStatus.Draft
             or LeaveApplicationStatus.Rejected;
-        private bool CanWithdraw => Status is LeaveApplicationStatus.Draft
+        public bool CanWithdraw => Status is LeaveApplicationStatus.Draft
             or LeaveApplicationStatus.Submitted;
-        private bool CanReject => Status is LeaveApplicationStatus.Submitted;
-        private bool CanApprove => Status is LeaveApplicationStatus.Submitted;
+        public bool CanReject => Status is LeaveApplicationStatus.Submitted;
+        public bool CanApprove => Status is LeaveApplicationStatus.Submitted;
 
         public LeaveApplication(Guid employeeId,
             LeaveApplicationType type,
@@ -108,6 +107,12 @@
             Status = LeaveApplicationStatus.Withdrawn;
         }
 
+        public bool OverlapsWith(LeaveApplication other)
+        {
+            return EmployeeId == other.EmployeeId
+                && DateRange.Overlaps(other.DateRange);
+        }
+
         private void EnsureValidReviewer(Guid reviewerId)
         {
             if (reviewerId == Guid.Empty)
@@ -126,9 +131,9 @@
             {
                 throw new ArgumentException("事假必須填寫請假理由。", nameof(reason));
             }
-            if (reason?.Length > MaxReasonLength)
+            if (reason?.Length > LeaveApplicationConstraints.MaxReasonLength)
             {
-                throw new ArgumentException($"請假理由最多 {MaxReasonLength} 個字。", nameof(reason));
+                throw new ArgumentException($"請假理由最多 {LeaveApplicationConstraints.MaxReasonLength} 個字。", nameof(reason));
             }
         }
 
@@ -138,9 +143,9 @@
             {
                 throw new ArgumentException("必須指定有效的請假日期區間。", nameof(dateRange));
             }
-            if (type == LeaveApplicationType.PersonalLeave && dateRange.Duration > MaxPersonalLeaveDays)
+            if (type == LeaveApplicationType.PersonalLeave && dateRange.Duration > LeaveApplicationConstraints.MaxPersonalLeaveDays)
             {
-                throw new ArgumentException($"事假最多 {MaxPersonalLeaveDays} 天。", nameof(dateRange));
+                throw new ArgumentException($"事假最多 {LeaveApplicationConstraints.MaxPersonalLeaveDays} 天。", nameof(dateRange));
             }
         }
 
