@@ -1,3 +1,5 @@
+using Attendance.Contracts;
+
 namespace Attendance.Core.Tests;
 
 public class LeaveApplicationTests

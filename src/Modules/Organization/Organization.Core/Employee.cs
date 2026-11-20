@@ -64,6 +64,15 @@ namespace Organization.Core
         public bool IsEmployedOn(DateOnly date) => GetEmploymentStatusOn(date) == EmploymentStatus.Active;
 
         /// <summary>
+        /// 開始日到結束日（包含頭尾）的每一天是否都在職。
+        /// 在職期間一定是連續的（到職日到離職日），所以只要頭尾兩天都在職，中間每一天也都在職。
+        /// 如果之後支援離職後再回任，這個前提就不成立，需要改寫。
+        /// </summary>
+        public bool IsEmployedThroughout(DateOnly start, DateOnly end) =>
+            GetEmploymentStatusOn(start) is EmploymentStatus.Active
+            && GetEmploymentStatusOn(end) is EmploymentStatus.Active;
+
+        /// <summary>
         /// 建構子和 Rename 共用的姓名規則。
         /// Request 上的 [Required, StringLength] 只保護 API 輸入；這裡保護的是 entity 本身，
         /// 不論是 controller、背景工作或事件處理呼叫，都一定會檢查。

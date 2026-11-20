@@ -1,6 +1,6 @@
-﻿namespace Attendance.Core
+﻿namespace Attendance.Contracts
 {
-    internal enum LeaveApplicationStatus
+    public enum LeaveApplicationStatus
     {
         Draft = 1,
         Submitted = 2, // 待審核
