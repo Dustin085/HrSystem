@@ -64,10 +64,13 @@ namespace Organization.Core
             // TerminationDate 已由 [Required] 在進到這裡之前驗證過
             var result = await _employeeService.TerminateAsync(id, request.TerminationDate!.Value);
 
-            return result.Error switch
+            if (result.IsSuccess)
             {
-                null => Ok(result.Value),
+                return Ok(result.Value);
+            }
 
+            return result.Error.Value switch
+            {
                 // 和 GetEmployee 一致：404 不帶內容
                 TerminateEmployeeError.EmployeeNotFound => NotFound(),
 
