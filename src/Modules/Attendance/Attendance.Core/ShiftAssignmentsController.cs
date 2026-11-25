@@ -27,10 +27,14 @@ namespace Attendance.Core
         {
             var result = await _shiftAssignmentService.CreateAsync(request);
 
-            return result.Error switch
+            // IsSuccess 有 [MemberNotNullWhen]，檢查後 Value 和 Error 都不需要再加 !
+            if (result.IsSuccess)
             {
-                null => CreatedAtAction(nameof(GetShiftAssignment), new { id = result.Value!.Id }, result.Value),
+                return CreatedAtAction(nameof(GetShiftAssignment), new { id = result.Value.Id }, result.Value);
+            }
 
+            return result.Error.Value switch
+            {
                 CreateShiftAssignmentError.InvalidTimeRange =>
                     FieldError(nameof(request.EndTime), "下班時間必須晚於上班時間。"),
 

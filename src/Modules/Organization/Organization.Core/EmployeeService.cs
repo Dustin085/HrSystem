@@ -64,26 +64,33 @@ namespace Organization.Core
         /// 注意：記憶體儲存的 Employee 是共用物件，「檢查 → 離職」不是 atomic，
         /// 兩個同時進來的請求理論上可能都通過檢查。階段 3 換成 EF Core 時用樂觀並行控制處理。
         /// </summary>
-        public Task<TerminateEmployeeResult> TerminateAsync(Guid id, DateOnly terminationDate)
+        public Task<Result<EmployeeDto, TerminateEmployeeError>> TerminateAsync(Guid id, DateOnly terminationDate)
+        {
+            return Task.FromResult(Terminate(id, terminationDate));
+        }
+
+        // 拆成同步方法，才能直接 return 錯誤或 DTO（隱含轉換成 Result），
+        // 不需要每一行都寫 Task.FromResult<Result<EmployeeDto, TerminateEmployeeError>>(...)。
+        private Result<EmployeeDto, TerminateEmployeeError> Terminate(Guid id, DateOnly terminationDate)
         {
             var employee = _repository.Find(id);
             if (employee is null)
             {
-                return Task.FromResult(TerminateEmployeeResult.Failure(TerminateEmployeeError.EmployeeNotFound));
+                return TerminateEmployeeError.EmployeeNotFound;
             }
 
             if (employee.TerminationDate is not null)
             {
-                return Task.FromResult(TerminateEmployeeResult.Failure(TerminateEmployeeError.AlreadyTerminated));
+                return TerminateEmployeeError.AlreadyTerminated;
             }
 
             if (terminationDate < employee.HireDate)
             {
-                return Task.FromResult(TerminateEmployeeResult.Failure(TerminateEmployeeError.TerminationDateBeforeHireDate));
+                return TerminateEmployeeError.TerminationDateBeforeHireDate;
             }
 
             employee.Terminate(terminationDate);
-            return Task.FromResult(TerminateEmployeeResult.Success(employee.ToDto(_timeProvider.GetToday())));
+            return employee.ToDto(_timeProvider.GetToday());
         }
     }
 }

@@ -21,7 +21,7 @@ namespace Attendance.Core
             _attendanceOptions = attendanceOptions;
         }
 
-        public async Task<CreateShiftAssignmentResult> CreateAsync(CreateShiftAssignmentRequest request)
+        public async Task<Result<ShiftAssignmentDto, CreateShiftAssignmentError>> CreateAsync(CreateShiftAssignmentRequest request)
         {
             // 這些欄位已由 [Required] 在進到這裡之前驗證過
             var employeeId = request.EmployeeId!.Value;
@@ -31,31 +31,31 @@ namespace Attendance.Core
 
             if (!TimeRange.TryCreate(startTime, endTime, out TimeRange timeRange))
             {
-                return CreateShiftAssignmentResult.Failure(CreateShiftAssignmentError.InvalidTimeRange);
+                return CreateShiftAssignmentError.InvalidTimeRange;
             }
 
             if (!IsWithinMaxShiftDuration(timeRange))
             {
-                return CreateShiftAssignmentResult.Failure(CreateShiftAssignmentError.ExceedMaxShiftDuration);
+                return CreateShiftAssignmentError.ExceedMaxShiftDuration;
             }
 
             var status = await _employeeDirectory.GetEmploymentStatusOnAsync(employeeId, date);
             switch (status)
             {
                 case null:
-                    return CreateShiftAssignmentResult.Failure(CreateShiftAssignmentError.EmployeeNotFound);
+                    return CreateShiftAssignmentError.EmployeeNotFound;
                 case not EmploymentStatus.Active:
-                    return CreateShiftAssignmentResult.Failure(CreateShiftAssignmentError.EmployeeNotEmployedOnDate);
+                    return CreateShiftAssignmentError.EmployeeNotEmployedOnDate;
             }
 
             var assignment = new ShiftAssignment(employeeId, date, timeRange);
 
             if (!_repository.TryAddWithoutOverlap(assignment))
             {
-                return CreateShiftAssignmentResult.Failure(CreateShiftAssignmentError.Overlapping);
+                return CreateShiftAssignmentError.Overlapping;
             }
 
-            return CreateShiftAssignmentResult.Success(assignment.ToDto());
+            return assignment.ToDto();
         }
 
         public Task<ShiftAssignmentDto?> GetByIdAsync(Guid id)

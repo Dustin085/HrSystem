@@ -37,8 +37,8 @@ public class LeaveApplicationServiceSubmitTests
 
         var result = await _service.SubmitAsync(leave.Id);
 
-        Assert.Null(result.Error);
-        Assert.Equal(LeaveApplicationStatus.Submitted, result.Value!.Status);
+        Assert.True(result.IsSuccess);
+        Assert.Equal(LeaveApplicationStatus.Submitted, result.Value.Status);
         Assert.Equal(LeaveApplicationStatus.Submitted, leave.Status);
     }
 
