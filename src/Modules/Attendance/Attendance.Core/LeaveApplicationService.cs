@@ -62,6 +62,11 @@ namespace Attendance.Core
             return leave.ToDto();
         }
 
+        public Task<LeaveApplicationDto?> GetByIdAsync(Guid id)
+        {
+            return Task.FromResult(_repository.Find(id)?.ToDto());
+        }
+
         /// <summary>
         /// 送出申請（草稿或已退回 → 待審核）。在職和重疊都在這裡檢查，因為草稿階段日期可能被修改過。
         /// TODO: 加入登入功能後，只有申請人本人可以送出。
