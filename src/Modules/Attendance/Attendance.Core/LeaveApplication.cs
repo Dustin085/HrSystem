@@ -25,6 +25,14 @@ namespace Attendance.Core
         public bool CanReject => Status is LeaveApplicationStatus.Submitted;
         public bool CanApprove => Status is LeaveApplicationStatus.Submitted;
 
+        /// <summary>
+        /// 給 EF Core 從資料庫還原物件用。資料庫中的資料在寫入時已經驗證過，所以這裡不重複驗證；
+        /// 程式碼建立申請時請使用另一個建構子。
+        /// </summary>
+        private LeaveApplication()
+        {
+        }
+
         public LeaveApplication(Guid employeeId,
             LeaveApplicationType type,
             DateRange dateRange,
@@ -78,6 +86,10 @@ namespace Attendance.Core
             }
             EnsureValidReviewer(reviewerId);
             ArgumentException.ThrowIfNullOrWhiteSpace(rejectReason);
+            if (rejectReason.Length > LeaveApplicationConstraints.MaxRejectReasonLength)
+            {
+                throw new ArgumentException($"退回理由最多 {LeaveApplicationConstraints.MaxRejectReasonLength} 個字。", nameof(rejectReason));
+            }
 
             ReviewerId = reviewerId;
             RejectReason = rejectReason;

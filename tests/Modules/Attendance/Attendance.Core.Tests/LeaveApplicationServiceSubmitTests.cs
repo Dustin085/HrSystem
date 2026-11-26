@@ -1,8 +1,10 @@
 using Attendance.Contracts;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 
 namespace Attendance.Core.Tests;
 
-public class LeaveApplicationServiceSubmitTests
+public sealed class LeaveApplicationServiceSubmitTests : IDisposable
 {
     private const string TestReason = "test reason";
 
@@ -16,16 +18,38 @@ public class LeaveApplicationServiceSubmitTests
     private static readonly DateRange Nov5To7 = new(new DateOnly(2026, 11, 5), new DateOnly(2026, 11, 7));
     private static readonly DateRange Nov6To7 = new(new DateOnly(2026, 11, 6), new DateOnly(2026, 11, 7));
 
-    private readonly InMemoryLeaveApplicationRepository _repository = new();
+    // SQLite 記憶體資料庫只在連線開著的期間存在，所以整個測試共用一條開著的連線，Dispose 時關閉。
+    // xUnit 每個測試都會建立新的實例，所以每個測試都有自己的空資料庫。
+    private readonly SqliteConnection _connection = new("DataSource=:memory:");
+    private readonly DbContextOptions<AttendanceDbContext> _options;
+    private readonly AttendanceDbContext _serviceDb;
     private readonly FakeEmployeeDirectory _employeeDirectory = new();
     private readonly LeaveApplicationService _service;
 
-    // xUnit 每個測試都會建立新的實例，所以每個測試都有自己的 Repository
     public LeaveApplicationServiceSubmitTests()
     {
+        _connection.Open();
+        _options = new DbContextOptionsBuilder<AttendanceDbContext>().UseSqlite(_connection).Options;
+
+        // 測試不需要 migration 歷史，直接依照模型建立資料表
+        using (var db = new AttendanceDbContext(_options))
+        {
+            db.Database.EnsureCreated();
+        }
+
         _employeeDirectory.AddEmployee(EmployeeId);
         _employeeDirectory.AddEmployee(OtherEmployeeId);
-        _service = new LeaveApplicationService(_repository, _employeeDirectory);
+
+        // Service 使用自己的 DbContext，和準備資料、驗證結果用的 DbContext 分開，
+        // 才能確認資料真的有寫進資料庫，而不是只改到記憶體中被追蹤的物件。
+        _serviceDb = new AttendanceDbContext(_options);
+        _service = new LeaveApplicationService(new LeaveApplicationRepository(_serviceDb), _employeeDirectory);
+    }
+
+    public void Dispose()
+    {
+        _serviceDb.Dispose();
+        _connection.Dispose();
     }
 
     #region 成功
@@ -39,7 +63,7 @@ public class LeaveApplicationServiceSubmitTests
 
         Assert.True(result.IsSuccess);
         Assert.Equal(LeaveApplicationStatus.Submitted, result.Value.Status);
-        Assert.Equal(LeaveApplicationStatus.Submitted, leave.Status);
+        Assert.Equal(LeaveApplicationStatus.Submitted, await GetStatusAsync(leave.Id));
     }
 
     [Fact]
@@ -50,7 +74,7 @@ public class LeaveApplicationServiceSubmitTests
         var result = await _service.SubmitAsync(leave.Id);
 
         Assert.Null(result.Error);
-        Assert.Equal(LeaveApplicationStatus.Submitted, leave.Status);
+        Assert.Equal(LeaveApplicationStatus.Submitted, await GetStatusAsync(leave.Id));
     }
 
     [Fact]
@@ -105,7 +129,7 @@ public class LeaveApplicationServiceSubmitTests
         var result = await _service.SubmitAsync(leave.Id);
 
         Assert.Equal(SubmitLeaveApplicationError.Overlapping, result.Error);
-        Assert.Equal(LeaveApplicationStatus.Draft, leave.Status); // 失敗時不能被送出
+        Assert.Equal(LeaveApplicationStatus.Draft, await GetStatusAsync(leave.Id)); // 失敗時不能被送出
     }
 
     #endregion
@@ -124,7 +148,7 @@ public class LeaveApplicationServiceSubmitTests
         var result = await _service.SubmitAsync(leave.Id);
 
         Assert.Equal(SubmitLeaveApplicationError.InvalidStatus, result.Error);
-        Assert.Equal(status, leave.Status);
+        Assert.Equal(status, await GetStatusAsync(leave.Id));
     }
 
     #endregion
@@ -148,7 +172,7 @@ public class LeaveApplicationServiceSubmitTests
         var result = await _service.SubmitAsync(leave.Id);
 
         Assert.Equal(SubmitLeaveApplicationError.EmployeeNotEmployedOnDateRange, result.Error);
-        Assert.Equal(LeaveApplicationStatus.Draft, leave.Status);
+        Assert.Equal(LeaveApplicationStatus.Draft, await GetStatusAsync(leave.Id));
     }
 
     [Fact]
@@ -163,7 +187,7 @@ public class LeaveApplicationServiceSubmitTests
 
     #endregion
 
-    /// <summary>直接放進 Repository，並透過 entity 的方法轉換到指定狀態。</summary>
+    /// <summary>直接存進資料庫，並透過 entity 的方法轉換到指定狀態。</summary>
     private LeaveApplication AddLeave(Guid employeeId, DateRange dateRange, LeaveApplicationStatus status)
     {
         var leave = new LeaveApplication(employeeId, LeaveApplicationType.AnnualLeave, dateRange, TestReason);
@@ -190,7 +214,16 @@ public class LeaveApplicationServiceSubmitTests
                 throw new ArgumentOutOfRangeException(nameof(status), status, null);
         }
 
-        _repository.Add(leave);
+        using var db = new AttendanceDbContext(_options);
+        db.LeaveApplications.Add(leave);
+        db.SaveChanges();
         return leave;
+    }
+
+    /// <summary>用新的 DbContext 從資料庫讀取目前的狀態。</summary>
+    private async Task<LeaveApplicationStatus> GetStatusAsync(Guid id)
+    {
+        await using var db = new AttendanceDbContext(_options);
+        return await db.LeaveApplications.Where(a => a.Id == id).Select(a => a.Status).SingleAsync();
     }
 }

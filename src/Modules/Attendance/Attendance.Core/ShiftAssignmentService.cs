@@ -6,13 +6,13 @@ namespace Attendance.Core
 {
     public sealed class ShiftAssignmentService
     {
-        private readonly InMemoryShiftAssignmentRepository _repository;
+        private readonly ShiftAssignmentRepository _repository;
         // 跨模組只透過 Organization.Contracts 的介面查詢員工
         private readonly IEmployeeDirectory _employeeDirectory;
         private readonly IOptions<AttendanceOptions> _attendanceOptions;
 
         public ShiftAssignmentService(
-            InMemoryShiftAssignmentRepository repository,
+            ShiftAssignmentRepository repository,
             IEmployeeDirectory employeeDirectory,
             IOptions<AttendanceOptions> attendanceOptions)
         {
@@ -50,7 +50,7 @@ namespace Attendance.Core
 
             var assignment = new ShiftAssignment(employeeId, date, timeRange);
 
-            if (!_repository.TryAddWithoutOverlap(assignment))
+            if (!await _repository.TryAddWithoutOverlapAsync(assignment))
             {
                 return CreateShiftAssignmentError.Overlapping;
             }
@@ -58,20 +58,18 @@ namespace Attendance.Core
             return assignment.ToDto();
         }
 
-        public Task<ShiftAssignmentDto?> GetByIdAsync(Guid id)
+        public async Task<ShiftAssignmentDto?> GetByIdAsync(Guid id)
         {
-            return Task.FromResult(_repository.Find(id)?.ToDto());
+            var assignment = await _repository.FindAsync(id);
+            return assignment?.ToDto();
         }
 
-        public Task<IReadOnlyList<ShiftAssignmentDto>> SearchAsync(Guid? employeeId, DateOnly? from, DateOnly? to)
+        public async Task<IReadOnlyList<ShiftAssignmentDto>> SearchAsync(Guid? employeeId, DateOnly? from, DateOnly? to)
         {
-            IReadOnlyList<ShiftAssignmentDto> result = _repository
-                .Search(employeeId, from, to)
-                .Select(a => a.ToDto())
-                .ToList();
-
-            return Task.FromResult(result);
+            var assignments = await _repository.SearchAsync(employeeId, from, to);
+            return assignments.Select(a => a.ToDto()).ToList();
         }
+
         private bool IsWithinMaxShiftDuration(TimeRange timeRange)
         {
             return _attendanceOptions.Value.MaxShiftDuration >= timeRange.Duration;

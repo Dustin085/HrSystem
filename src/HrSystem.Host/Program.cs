@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using Attendance.Core;
 using HrSystem.Host.OpenApi;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Organization.Core;
 
@@ -42,6 +43,14 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    // 開發環境啟動時自動套用 migration，資料庫不存在時也會自動建立。
+    // 正式環境不要這樣做：應該在部署流程中執行 migration，避免多台伺服器同時啟動時一起修改資料庫。
+    await using (var scope = app.Services.CreateAsyncScope())
+    {
+        await scope.ServiceProvider.GetRequiredService<OrganizationDbContext>().Database.MigrateAsync();
+        await scope.ServiceProvider.GetRequiredService<AttendanceDbContext>().Database.MigrateAsync();
+    }
+
     app.UseSwagger();      // /swagger/v1/swagger.json
     app.UseSwaggerUI();    // /swagger
 }

@@ -340,6 +340,27 @@ public class LeaveApplicationTests
     }
 
     [Fact]
+    public void Reject_WithReasonAtMaxLength_Succeeds()
+    {
+        var leave = CreateLeaveInStatus(LeaveApplicationStatus.Submitted);
+        var rejectReason = new string('a', LeaveApplicationConstraints.MaxRejectReasonLength);
+
+        leave.Reject(ReviewerId, rejectReason, Now);
+
+        Assert.Equal(rejectReason, leave.RejectReason);
+    }
+
+    [Fact]
+    public void Reject_WithReasonTooLong_ThrowsArgumentException()
+    {
+        var leave = CreateLeaveInStatus(LeaveApplicationStatus.Submitted);
+        var rejectReason = new string('a', LeaveApplicationConstraints.MaxRejectReasonLength + 1);
+
+        Assert.Throws<ArgumentException>(() => leave.Reject(ReviewerId, rejectReason, Now));
+        Assert.Equal(LeaveApplicationStatus.Submitted, leave.Status); // 失敗時不能被退回
+    }
+
+    [Fact]
     public void Reject_BySelf_ThrowsArgumentException()
     {
         var leave = CreateLeaveInStatus(LeaveApplicationStatus.Submitted);

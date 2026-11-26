@@ -10,6 +10,16 @@ namespace Organization.Core
         public DateOnly HireDate { get; private set; }
         public DateOnly? TerminationDate { get; private set; } // 離職日，null 代表在職。離職日當天是最後工作日
 
+        /// <summary>
+        /// 給 EF Core 從資料庫還原物件用。資料庫中的資料在寫入時已經驗證過，所以這裡不重複驗證；
+        /// 程式碼建立員工時請使用另一個建構子。
+        /// </summary>
+        private Employee()
+        {
+            EmployeeNumber = null!;
+            Name = null!;
+        }
+
         public Employee(string employeeNumber, string name, DateOnly hireDate)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(employeeNumber);

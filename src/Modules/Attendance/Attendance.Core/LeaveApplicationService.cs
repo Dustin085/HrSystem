@@ -5,11 +5,11 @@ namespace Attendance.Core
 {
     public sealed class LeaveApplicationService
     {
-        private readonly InMemoryLeaveApplicationRepository _repository;
+        private readonly LeaveApplicationRepository _repository;
         // 跨模組只透過 Organization.Contracts 的介面查詢員工
         private readonly IEmployeeDirectory _employeeDirectory;
 
-        public LeaveApplicationService(InMemoryLeaveApplicationRepository repository,
+        public LeaveApplicationService(LeaveApplicationRepository repository,
             IEmployeeDirectory employeeDirectory)
         {
             _repository = repository;
@@ -57,14 +57,15 @@ namespace Attendance.Core
             }
 
             var leave = new LeaveApplication(employeeId, type, dateRange, reason);
-            _repository.Add(leave);
+            await _repository.AddAsync(leave);
 
             return leave.ToDto();
         }
 
-        public Task<LeaveApplicationDto?> GetByIdAsync(Guid id)
+        public async Task<LeaveApplicationDto?> GetByIdAsync(Guid id)
         {
-            return Task.FromResult(_repository.Find(id)?.ToDto());
+            var leave = await _repository.FindAsync(id);
+            return leave?.ToDto();
         }
 
         /// <summary>
@@ -73,7 +74,7 @@ namespace Attendance.Core
         /// </summary>
         public async Task<Result<LeaveApplicationDto, SubmitLeaveApplicationError>> SubmitAsync(Guid leaveId)
         {
-            var leave = _repository.Find(leaveId);
+            var leave = await _repository.FindAsync(leaveId);
             if (leave is null)
             {
                 return SubmitLeaveApplicationError.LeaveApplicationNotFound;
@@ -92,7 +93,7 @@ namespace Attendance.Core
                     return SubmitLeaveApplicationError.EmployeeNotEmployedOnDateRange;
             }
 
-            return _repository.TrySubmitWithoutOverlap(leave) switch
+            return await _repository.TrySubmitWithoutOverlapAsync(leave) switch
             {
                 TrySubmitOutcome.Submitted => leave.ToDto(),
                 TrySubmitOutcome.InvalidStatus => SubmitLeaveApplicationError.InvalidStatus,

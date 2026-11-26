@@ -8,4 +8,8 @@
 		<ProjectReference Include="..\Organization.Contracts\Organization.Contracts.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.12" />
+	</ItemGroup>
+
 </Project>

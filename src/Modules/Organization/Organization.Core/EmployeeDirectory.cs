@@ -7,10 +7,10 @@ namespace Organization.Core
     /// </summary>
     internal sealed class EmployeeDirectory : IEmployeeDirectory
     {
-        private readonly InMemoryEmployeeRepository _repository;
+        private readonly EmployeeRepository _repository;
         private readonly TimeProvider _timeProvider;
 
-        public EmployeeDirectory(InMemoryEmployeeRepository repository,
+        public EmployeeDirectory(EmployeeRepository repository,
             TimeProvider timeProvider)
         {
             _repository = repository;
@@ -19,36 +19,29 @@ namespace Organization.Core
 
         public Task<bool> ExistsByIdAsync(Guid id)
         {
-            return Task.FromResult(_repository.Exists(id));
+            return _repository.ExistsAsync(id);
         }
 
-        public Task<EmployeeDto?> GetByIdAsync(Guid id)
+        public async Task<EmployeeDto?> GetByIdAsync(Guid id)
         {
-            return Task.FromResult(_repository.Find(id)?.ToDto(_timeProvider.GetToday()));
+            var employee = await _repository.FindAsync(id);
+            return employee?.ToDto(_timeProvider.GetToday());
         }
 
-        public Task<EmploymentStatus?> GetEmploymentStatusOnAsync(Guid id, DateOnly date)
+        public async Task<EmploymentStatus?> GetEmploymentStatusOnAsync(Guid id, DateOnly date)
         {
-            var employee = _repository.Find(id);
-            if (employee is null)
-            {
-                return Task.FromResult<EmploymentStatus?>(null);
-            }
-            return Task.FromResult<EmploymentStatus?>(employee.GetEmploymentStatusOn(date));
+            var employee = await _repository.FindAsync(id);
+            return employee?.GetEmploymentStatusOn(date);
         }
 
-        public Task<bool?> IsEmployedThroughoutAsync(Guid id, DateOnly start, DateOnly end)
+        public async Task<bool?> IsEmployedThroughoutAsync(Guid id, DateOnly start, DateOnly end)
         {
             if (end < start)
             {
                 throw new ArgumentException("結束日不能早於開始日。", nameof(end));
             }
-            var employee = _repository.Find(id);
-            if (employee is null)
-            {
-                return Task.FromResult<bool?>(null);
-            }
-            return Task.FromResult<bool?>(employee.IsEmployedThroughout(start, end));
+            var employee = await _repository.FindAsync(id);
+            return employee?.IsEmployedThroughout(start, end);
         }
     }
 }

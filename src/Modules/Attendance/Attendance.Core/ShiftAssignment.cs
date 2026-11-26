@@ -13,6 +13,14 @@ namespace Attendance.Core
 
         public TimeSpan Duration => TimeRange.Duration;
 
+        /// <summary>
+        /// 給 EF Core 從資料庫還原物件用。資料庫中的資料在寫入時已經驗證過，所以這裡不重複驗證；
+        /// 程式碼建立排班時請使用另一個建構子。
+        /// </summary>
+        private ShiftAssignment()
+        {
+        }
+
         public ShiftAssignment(Guid employeeId, DateOnly date, TimeRange timeRange)
         {
             if (employeeId == Guid.Empty)
